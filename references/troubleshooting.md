@@ -32,14 +32,22 @@
 
 **Fix:** Use `"sessionTarget": "current"` to bind the cron to the main session.
 
+## Cron Notification Not Received
+
+**Symptom:** Cron runs successfully but user sees nothing, or sees `⚠️ ⏰ Cron failed`.
+
+**Cause:** Agent replied `NO_REPLY` which gets swallowed by the system.
+
+**Fix:** Never include NO_REPLY in cron prompt. Explicitly forbid skipping: "每次必须发一条消息，禁止不发消息".
+
 ## Telegram Image Compression
 
 **Symptom:** Screenshots look blurry when sent to Telegram.
 
-**Fix:** Send as document: `message action=send asDocument=true`. Or use higher DPI.
+**Fix:** Send as document: `message action=send asDocument=true`.
 
 ## Mermaid Diagram Too Small in Screenshot
 
 **Symptom:** Diagram occupies tiny portion of screenshot.
 
-**Fix:** Get SVG bounding box, crop to content area, use deviceScaleFactor 3x+.
+**Fix:** Get SVG bounding box, crop to content area, use deviceScaleFactor 3x+. See [rendering.md](rendering.md).

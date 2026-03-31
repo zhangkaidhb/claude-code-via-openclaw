@@ -158,42 +158,13 @@ cron action=update --jobId <id> --patch '{"enabled": false}'
 
 ### Reporting Results
 - Always verify output before reporting to user
-- **Self-verify screenshots** — check image yourself (read tool) before sending, ensure diagram fills the frame
 - Generate visual proof (screenshots, test output) when applicable
-- For Mermaid/UML diagrams: use **Playwright** (not Puppeteer)
-- Send screenshots as documents (`asDocument=true`) to avoid Telegram compression
-- For Mermaid sequenceDiagram: `rect rgb()` does NOT work, use `Note right of` for annotations
 
-## Screenshots with Playwright
+## Reference
 
-```bash
-# Render HTML to screenshot (install: npm install playwright && npx playwright install chromium)
-node -e "
-const { chromium } = require('playwright');
-(async () => {
-  const browser = await chromium.launch({headless: true, args: ['--no-sandbox']});
-  const page = await browser.newPage();
-  await page.goto('file:///path/to/file.html', {waitUntil: 'networkidle'});
-  await page.screenshot({path: '/tmp/output.png', fullPage: true});
-  await browser.close();
-})();
-"
-```
-
-**Tips:**
-- **Mermaid SVGs are small** (~300px logical size) — must crop and scale up
-- Use `page.evaluate()` to get SVG bounding box, then `clip` to content area
-- Set `deviceScaleFactor: 3` on viewport for high-DPI output
-- **Always self-check**: `read` the screenshot before sending to user
-- Use `fullPage: true` for long content
-- **CDN can timeout** — for repeated rendering, install mermaid locally: `npm install mermaid`
-
-## Mermaid Pitfalls
-
-- **`sequenceDiagram` + `rect rgb()` / `rect rgba()`** → causes NaN coordinates, diagram fails to render. Use `Note right of` instead
-- **`sequenceDiagram` + `style` annotations** → not supported (unlike `classDiagram`)
-- **CDN timeout** → mermaid CDN can be slow/unreliable. Install locally: `npm install mermaid`, reference `/path/to/node_modules/mermaid/dist/mermaid.min.js`
-- **SVG auto-sizing** → Mermaid renders SVGs at their natural size (often ~300px wide). Use `viewport` + `clip` for clean screenshots
+- [acpx-cli.md](references/acpx-cli.md) — acpx CLI command reference
+- [troubleshooting.md](references/troubleshooting.md) — Common issues and solutions
+- [rendering.md](references/rendering.md) — Screenshots, Mermaid pitfalls, visual output
 
 ## Reference
 
