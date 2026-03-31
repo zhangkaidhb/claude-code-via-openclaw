@@ -137,21 +137,37 @@ cron action=update --jobId <id> --patch '{"enabled": false}'
 - Include test commands and success criteria
 - Show expected output examples when possible
 - One task per prompt — don't stack unrelated requests
-- If the first attempt fails, analyze the failure and give Claude Code more precise instructions
+- **Each prompt must be self-contained** — include file paths, current code state, expected output
+- **Include the exact function signatures** when asking Claude Code to modify code
+- **State what NOT to do** — e.g., "do NOT remove X", "do NOT change Y"
+
+### Iterative Fix Strategy
+- **First attempt failing is normal** — the key is analyzing WHY it failed
+- After failure: read the actual code/error, identify the root cause, give Claude Code more precise instructions
+- **Do NOT retry with the same vague prompt** — each iteration must be more specific
+- Common failure patterns:
+  - "Too many details" → add filtering/criteria (e.g., "only cross-class calls")
+  - "Wrong syntax" → test the syntax yourself first, then specify what works
+  - "Test failures" → read the test error, tell Claude Code exactly which assertion failed
+- **Analyze before delegating** — if you can identify the bug yourself, fix it directly instead of spawning Claude Code
+
+### "Just Do It" Principle
+- When user's intent is clear and direction is obvious, execute immediately
+- Do NOT ask "要我现在做吗？" or "你想继续吗？" for clear tasks
+- Ask only when there's genuine ambiguity or multiple viable approaches
 
 ### Reporting Results
 - Always verify output before reporting to user
+- **Self-verify screenshots** — check image yourself (read tool) before sending, ensure diagram fills the frame
 - Generate visual proof (screenshots, test output) when applicable
-- For Mermaid/UML diagrams: use Playwright to render and screenshot
-- Send screenshots as documents to avoid Telegram compression
+- For Mermaid/UML diagrams: use **Playwright** (not Puppeteer)
+- Send screenshots as documents (`asDocument=true`) to avoid Telegram compression
+- For Mermaid sequenceDiagram: `rect rgb()` does NOT work, use `Note right of` for annotations
 
 ## Screenshots with Playwright
 
 ```bash
-# Install once (not in skill - user should have this)
-# npm install playwright npx playwright install chromium
-
-# Render HTML to screenshot
+# Render HTML to screenshot (install: npm install playwright && npx playwright install chromium)
 node -e "
 const { chromium } = require('playwright');
 (async () => {
@@ -165,9 +181,19 @@ const { chromium } = require('playwright');
 ```
 
 **Tips:**
+- **Mermaid SVGs are small** (~300px logical size) — must crop and scale up
+- Use `page.evaluate()` to get SVG bounding box, then `clip` to content area
+- Set `deviceScaleFactor: 3` on viewport for high-DPI output
+- **Always self-check**: `read` the screenshot before sending to user
 - Use `fullPage: true` for long content
-- Set `viewport` size before goto for specific dimensions
-- Use `clip` to crop to a specific element area
+- **CDN can timeout** — for repeated rendering, install mermaid locally: `npm install mermaid`
+
+## Mermaid Pitfalls
+
+- **`sequenceDiagram` + `rect rgb()` / `rect rgba()`** → causes NaN coordinates, diagram fails to render. Use `Note right of` instead
+- **`sequenceDiagram` + `style` annotations** → not supported (unlike `classDiagram`)
+- **CDN timeout** → mermaid CDN can be slow/unreliable. Install locally: `npm install mermaid`, reference `/path/to/node_modules/mermaid/dist/mermaid.min.js`
+- **SVG auto-sizing** → Mermaid renders SVGs at their natural size (often ~300px wide). Use `viewport` + `clip` for clean screenshots
 
 ## Reference
 
